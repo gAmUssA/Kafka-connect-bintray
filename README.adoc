@@ -1,0 +1,51 @@
+= Kafka Connect Bintray connector
+
+WARNING: THIS CONNECTOR IS WIP!
+
+video::KpWqTjLn7Fg[youtube]
+
+== Running in development
+
+The link:docker-compose.yml[docker-compose.yml] that is included in this repository is based on the Confluent Platform Docker
+images.
+Take a look at the http://docs.confluent.io/3.0.1/cp-docker-images/docs/quickstart.html#getting-started-with-docker-client[quickstart]
+for the Docker images.
+
+The hostname `confluent` must be resolvable by your host.
+You will need to determine the ip address of your docker-machine using `docker-machine ip confluent`
+and add this to your `/etc/hosts` file. For example if `docker-machine ip confluent` returns `192.168.99.100` add this:
+
+----
+192.168.99.100  confluent
+----
+
+----
+docker-compose up -d
+----
+
+Start the connector with debugging enabled.
+
+----
+./bin/debug.sh
+----
+
+Start the connector with debugging enabled. This will wait for a debugger to attach.
+
+----
+export SUSPEND='y'
+./bin/debug.sh
+----
+
+== Example of bintray response
+
+----
+{
+  "content_length": 4785,
+  "ip_address": "173.54.225.170",
+  "path": "/russian-hackers/hacking-utils/semaphore-bank-hack-1.0.zip",
+  "subject": "gamussa",
+  "time": "2018-03-26T15:16:41.986Z",
+  "type": "download",
+  "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/604.5.6 (KHTML, like Gecko) Version/11.0.3 Safari/604.5.6"
+}
+----
