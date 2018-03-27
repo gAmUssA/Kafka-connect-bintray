@@ -4,6 +4,8 @@ WARNING: THIS CONNECTOR IS WIP!
 
 video::KpWqTjLn7Fg[youtube]
 
+https://youtu.be/KpWqTjLn7Fg
+
 == Running in development
 
 The link:docker-compose.yml[docker-compose.yml] that is included in this repository is based on the Confluent Platform Docker
