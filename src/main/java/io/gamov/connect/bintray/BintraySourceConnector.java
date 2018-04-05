@@ -1,5 +1,9 @@
 package io.gamov.connect.bintray;
 
+import com.google.common.base.Preconditions;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +16,8 @@ import org.slf4j.LoggerFactory;
 public class BintraySourceConnector extends SourceConnector {
 
   private static Logger log = LoggerFactory.getLogger(BintraySourceConnector.class);
-  private BintraySourceConnectorConfig config;
+
+  private List<Map<String, String>> configs = new ArrayList<>();
 
   @Override
   public String version() {
@@ -21,22 +26,25 @@ public class BintraySourceConnector extends SourceConnector {
 
   @Override
   public void start(Map<String, String> map) {
-    config = new BintraySourceConnectorConfig(map);
+    log.info("[✅] Starting Bintray connector");
+    BintraySourceConnectorConfig config = new BintraySourceConnectorConfig(map);
 
-    //TODO: Add things you need to do to setup your connector.
+    Map<String, String> taskSettings = new HashMap<>(map);
+    this.configs.add(taskSettings);
   }
 
   @Override
   public Class<? extends Task> taskClass() {
-    //TODO: Return your task implementation.
-    return BintraySourceTask.class;
+    Class<BintraySourceTask> bintraySourceTaskClass = BintraySourceTask.class;
+    log.debug("taskClass: " + bintraySourceTaskClass);
+    return bintraySourceTaskClass;
   }
 
   @Override
-  public List<Map<String, String>> taskConfigs(int i) {
-    //TODO: Define the individual task configurations that will be executed.
+  public List<Map<String, String>> taskConfigs(int maxTasks) {
+    Preconditions.checkState(maxTasks > 0, "MaxTasks must be greater than 0");
 
-    throw new UnsupportedOperationException("This has not been implemented.");
+    return this.configs;
   }
 
   @Override

@@ -1,5 +1,7 @@
 package io.gamov.connect.bintray.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * JSON response of bintray firehose event
  *
@@ -19,15 +21,82 @@ public class FirehoseEvent {
   private String type;
   private String path;
 
-  // user_agent
+  @JsonProperty("user_agent")
   private String userAgent;
 
-  // content_length
-  private int contentLengh;
+  @JsonProperty("content_length")
+  private int contentLength;
 
-  // ip_address
+  @Override
+  public String toString() {
+    return "FirehoseEvent{" + "type='" + type + '\''
+           + ", path='" + path + '\''
+           + ", userAgent='" + userAgent + '\''
+           + ", contentLength=" + contentLength
+           + ", ipAddress='" + ipAddress + '\''
+           + ", subject='" + subject + '\''
+           + ", time='" + time + '\''
+           + '}';
+  }
+
+  @JsonProperty("ip_address")
   private String ipAddress;
   private String subject;
   private String time;
 
+  public String getIpAddress() {
+    return ipAddress;
+  }
+
+  public void setIpAddress(String ipAddress) {
+    this.ipAddress = ipAddress;
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
+
+  public String getPath() {
+    return path;
+  }
+
+  public void setPath(String path) {
+    this.path = path;
+  }
+
+  public String getUserAgent() {
+    return userAgent;
+  }
+
+  public void setUserAgent(String userAgent) {
+    this.userAgent = userAgent;
+  }
+
+  public int getContentLength() {
+    return contentLength;
+  }
+
+  public void setContentLength(int contentLength) {
+    this.contentLength = contentLength;
+  }
+
+  public String getSubject() {
+    return subject;
+  }
+
+  public void setSubject(String subject) {
+    this.subject = subject;
+  }
+
+  public String getTime() {
+    return time;
+  }
+
+  public void setTime(String time) {
+    this.time = time;
+  }
 }

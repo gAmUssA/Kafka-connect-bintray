@@ -24,6 +24,10 @@ public class BintraySourceConnectorConfig extends AbstractConfig {
   public static final String BINTRAY_ORG = "bintray.org";
   public static final String BINTRAY_ORG_DOC = "Bintray organization to subscribe to";
 
+  public static final String BINTRAY_KAFKA_TOPIC = "bintray.kafka.topic";
+  public static final String BINTRAY_KAFKA_TOPIC_DOC = "Kafka topic to write the bintray firehose"
+                                                       + " event";
+
   public BintraySourceConnectorConfig(ConfigDef config, Map<String, String> parsedConfig) {
     super(config, parsedConfig);
   }
@@ -38,6 +42,7 @@ public class BintraySourceConnectorConfig extends AbstractConfig {
         .define(BINTRAY_API_KEY, Type.STRING, Importance.HIGH, BINTRAY_API_KEY_DOC)
         .define(BINTRAY_USER, Type.STRING, Importance.HIGH, BINTRAY_USER_DOC)
         .define(BINTRAY_ORG, Type.STRING, Importance.HIGH, BINTRAY_ORG_DOC)
+        .define(BINTRAY_KAFKA_TOPIC, Type.STRING, Importance.HIGH, BINTRAY_KAFKA_TOPIC_DOC)
         ;
   }
 
@@ -59,5 +64,9 @@ public class BintraySourceConnectorConfig extends AbstractConfig {
 
   public String getStreamingApiUrl() {
     return this.getBintrayApiUrl() + "/stream";
+  }
+
+  public String getBintrayKafkaTopic(){
+    return this.getString(BINTRAY_KAFKA_TOPIC);
   }
 }

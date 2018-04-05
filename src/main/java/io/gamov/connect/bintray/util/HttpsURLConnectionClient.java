@@ -18,12 +18,6 @@ public class HttpsURLConnectionClient implements HttpClient {
   }
 
   @Override
-  public String credentials(String user, String apiKey) {
-    String userPassword = user + ":" + apiKey;
-    return "Basic " + new sun.misc.BASE64Encoder().encode(userPassword.getBytes());
-  }
-
-  @Override
   public void openHttpsConnection(String urlStr, String user, String apiKey,
                                   Consumer<String> handler)
       throws IOException {
