@@ -62,16 +62,17 @@ public class BintraySourceTask extends SourceTask {
     try {
       Map<String, ?> sourcePartition = Collections.emptyMap();
       Map<String, ?> sourceOffset = Collections.emptyMap();
+      System.out.println(s);
       log.debug("raw event: ", s);
       FirehoseEvent event = null;
       try {
         if(!"".equals(s)){
           event = objectMapper.readValue(s, FirehoseEvent.class);
+          System.out.println(event);
         }
       } catch (IOException e) {
         log.error("Error in parsing json", e);
       }
-      System.out.println(event.toString());
 
       Struct keyStruct = new Struct(FIRE_SCHEMA_KEY);
       Struct valueStruct = new Struct(FIREHOSE_EVENT_SCHEMA);

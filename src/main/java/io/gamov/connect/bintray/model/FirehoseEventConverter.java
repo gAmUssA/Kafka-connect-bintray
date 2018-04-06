@@ -7,13 +7,13 @@ import org.apache.kafka.connect.data.Struct;
 public class FirehoseEventConverter {
 
   public final static Schema FIREHOSE_EVENT_SCHEMA =
-      SchemaBuilder.string()
+      SchemaBuilder.struct()
           .name("io.gamov.bintray.model.FirehoseEvent")
           .doc("Bintray firehose event")
           .field("Type", SchemaBuilder.string().build())
-          .field("Path", SchemaBuilder.string().build())
+          .field("Path", SchemaBuilder.string().optional().build())
           .field("UserAgent", SchemaBuilder.string().build())
-          .field("ContentLength", SchemaBuilder.int64().build())
+          .field("ContentLength", SchemaBuilder.int32().optional().build())
           .field("IpAddress", SchemaBuilder.string().build())
           .field("Subject", SchemaBuilder.string().build())
           .field("Time", SchemaBuilder.string().build())
@@ -21,13 +21,13 @@ public class FirehoseEventConverter {
 
   public final static Schema FIRE_SCHEMA_KEY =
       SchemaBuilder.struct()
-          .name("io.gamov.bintray.model.FirehoseEvent.IpAddress")
+          .name("io.gamov.bintray.model.FirehoseEvent.EventId")
           .doc("Key for a firehose event.")
-          .field("IpAddress", Schema.STRING_SCHEMA)
+          .field("Id", Schema.STRING_SCHEMA)
           .build();
 
   public static void convertKey(FirehoseEvent event, Struct struct) {
-    struct.put("IpAddress", event.getIpAddress());
+    struct.put("Id", event.getIpAddress());
   }
 
   public static void convert(FirehoseEvent event, Struct struct) {
