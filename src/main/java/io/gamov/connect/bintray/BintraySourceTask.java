@@ -64,41 +64,36 @@ public class BintraySourceTask extends SourceTask {
       Map<String, ?> sourceOffset = Collections.emptyMap();
       System.out.println(s);
       log.debug("raw event: ", s);
-      FirehoseEvent event = null;
-      try {
-        if(!"".equals(s)){
-          event = objectMapper.readValue(s, FirehoseEvent.class);
-          System.out.println(event);
-        }
-      } catch (IOException e) {
-        log.error("Error in parsing json", e);
+      if (!"".equals(s)) {
+        FirehoseEvent event = objectMapper.readValue(s, FirehoseEvent.class);
+        System.out.println(event);
+
+        Struct keyStruct = new Struct(FIRE_SCHEMA_KEY);
+        Struct valueStruct = new Struct(FIREHOSE_EVENT_SCHEMA);
+
+        convertKey(event, keyStruct);
+        convert(event, valueStruct);
+
+        SourceRecord
+            record =
+            new SourceRecord(sourcePartition,
+                             sourceOffset,
+                             this.connectorConfig.getBintrayKafkaTopic(),
+                             FirehoseEventConverter.FIRE_SCHEMA_KEY, keyStruct,
+                             FirehoseEventConverter.FIREHOSE_EVENT_SCHEMA, valueStruct);
+
+        this.messageQueue.add(record);
       }
-
-      Struct keyStruct = new Struct(FIRE_SCHEMA_KEY);
-      Struct valueStruct = new Struct(FIREHOSE_EVENT_SCHEMA);
-
-      convertKey(event, keyStruct);
-      convert(event, valueStruct);
-
-      SourceRecord
-          record =
-          new SourceRecord(sourcePartition,
-                           sourceOffset,
-                           this.connectorConfig.getBintrayKafkaTopic(),
-                           FirehoseEventConverter.FIRE_SCHEMA_KEY, keyStruct,
-                           FirehoseEventConverter.FIREHOSE_EVENT_SCHEMA, valueStruct);
-
-      this.messageQueue.add(record);
     } catch (Exception ex) {
       if (log.isErrorEnabled()) {
         log.error("Exception thrown", ex);
       }
     }
-
   };
 
   @Override
   public List<SourceRecord> poll() throws InterruptedException {
+    System.out.println("================ Poll =========================");
     List<SourceRecord> records = new ArrayList<>(256);
 
     while (records.isEmpty()) {
@@ -112,6 +107,7 @@ public class BintraySourceTask extends SourceTask {
         }
 
         records.add(record);
+        System.out.println("polled " + size + " records");
       }
 
       if (records.isEmpty()) {
