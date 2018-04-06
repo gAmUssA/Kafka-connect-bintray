@@ -15,6 +15,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 import io.gamov.connect.bintray.model.FirehoseEvent;
@@ -26,12 +28,13 @@ import static io.gamov.connect.bintray.model.FirehoseEventConverter.*;
 
 public class BintraySourceTask extends SourceTask {
 
-  static final Logger log = LoggerFactory.getLogger(BintraySourceTask.class);
-  final ConcurrentLinkedDeque<SourceRecord> messageQueue = new ConcurrentLinkedDeque<>();
+  private static final Logger log = LoggerFactory.getLogger(BintraySourceTask.class);
 
-  HttpClient httpClient;
-  BintraySourceConnectorConfig connectorConfig;
-  ObjectMapper objectMapper = new ObjectMapper();
+  private final ConcurrentLinkedDeque<SourceRecord> messageQueue = new ConcurrentLinkedDeque<>();
+  private HttpClient httpClient;
+  private BintraySourceConnectorConfig connectorConfig;
+  private ObjectMapper objectMapper = new ObjectMapper();
+  private ExecutorService executor = Executors.newSingleThreadExecutor();
 
   @Override
   public String version() {
@@ -40,22 +43,43 @@ public class BintraySourceTask extends SourceTask {
 
   @Override
   public void start(Map<String, String> map) {
-    //TODO: Do things here that are required to start your task. This could be open a connection to a database, etc.
+    //Do things here that are required to start your task.
+    // This could be open a connection to a database, etc.
+
     objectMapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, true);
     connectorConfig = new BintraySourceConnectorConfig(map);
-    String streamingApiUrl = connectorConfig.getStreamingApiUrl();
-    String bintrayOrg = connectorConfig.getBintrayOrg();
-    String bintrayUser = connectorConfig.getBintrayUser();
-    String bintrayApiKey = connectorConfig.getBintrayApiKey();
 
-    httpClient = new HttpsURLConnectionClient();
-    try {
-      httpClient.openHttpsConnection(streamingApiUrl + "/" + bintrayOrg, bintrayUser,
-                                     bintrayApiKey, handler);
-    } catch (IOException e) {
-      e.printStackTrace();
+    executor.submit(new MyHttpStreamTask(connectorConfig.getStreamingApiUrl(),
+                                         connectorConfig.getBintrayOrg(),
+                                         connectorConfig.getBintrayUser(),
+                                         connectorConfig.getBintrayApiKey()));
+  }
+
+  private class MyHttpStreamTask implements Runnable {
+
+    private String streamingApiUrl;
+    private String bintrayOrg;
+    private String bintrayUser;
+    private String bintrayApiKey;
+
+    private MyHttpStreamTask(String streamingApiUrl, String bintrayOrg, String bintrayUser,
+                             String bintrayApiKey) {
+      this.streamingApiUrl = streamingApiUrl;
+      this.bintrayOrg = bintrayOrg;
+      this.bintrayUser = bintrayUser;
+      this.bintrayApiKey = bintrayApiKey;
     }
 
+    @Override
+    public void run() {
+      httpClient = new HttpsURLConnectionClient();
+      try {
+        httpClient.openHttpsConnection(streamingApiUrl + "/" + bintrayOrg, bintrayUser,
+                                       bintrayApiKey, handler);
+      } catch (IOException e) {
+        log.error("error: ", e);
+      }
+    }
   }
 
   private Consumer<String> handler = s -> {
@@ -93,7 +117,7 @@ public class BintraySourceTask extends SourceTask {
 
   @Override
   public List<SourceRecord> poll() throws InterruptedException {
-    System.out.println("================ Poll =========================");
+    log.debug("================ Poll =========================");
     List<SourceRecord> records = new ArrayList<>(256);
 
     while (records.isEmpty()) {
@@ -107,7 +131,7 @@ public class BintraySourceTask extends SourceTask {
         }
 
         records.add(record);
-        System.out.println("polled " + size + " records");
+        log.debug("polled " + size + " records");
       }
 
       if (records.isEmpty()) {
@@ -121,6 +145,7 @@ public class BintraySourceTask extends SourceTask {
   @Override
   public void stop() {
     //TODO: Do whatever is required to stop your task.
+    executor.shutdown();
     httpClient.closeConnection();
   }
 }
